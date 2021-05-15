@@ -2,6 +2,9 @@ If we need to use Lora for IOT(internet of things) we want to have an Lora gatew
 but gateways are not so cheap they cost around 6000/- INR.
 So I used an NodeMcu which has an esp8266 wifi inbuilt so if i can able to establish the LORA connection between a UNO and NodeMcu 
 then the recievd packet(from UNO) will be able to sent from LORA to intenet using esp8266.
+Another reason behind selecting nodemcu as a reciever is that as it has inbuilt wifi it is easy to connect an extra SPI device to it,
+If we choose ardunio nano for reciever we need to connect both WIFI and LORA externally Since nano has only one set of SPI pins and both
+WIFI and LORA uses spi we have to use  SS(Slave select) pin it makes programming a bit difficult.
 So i used Nodemcu as my lora reciever.
 To learn about pins of nodemcu visit:-https:"//www.instructables.com/id/NodeMCU-ESP8266-Details-and-Pinout/".
 _____________________________________________
@@ -9,29 +12,31 @@ pinno:  |    LORA             |  NODEMCU
 _____________________________________________
 1       |      GND             |       GND
 2       |   3.3V               | 3.3V Power in
-3       |   RESET              | D9
-4       |   DIO0               | D2
-5       |   SCK                | D13
-6       |   MISO               | D12
-7       |   MOSI               | D11
-8       |   NSS                | D10
+3       |   RESET              | D0  -IO-16
+4       |   DIO0               | D2  -IO-04 --IO->INPUT OUTPUT used for programmning ,DX->used for reference on board
+5       |   SCK                | D5  -IO-14
+6       |   MISO               | D6  -IO-12
+7       |   MOSI               | D7  -IO-13
+8       |   NSS                | D8  -IO-15
 ----------------------------------------------------------
+For nodemcu IO mapping use-https://www.electronicwings.com/nodemcu/nodemcu-gpio-with-arduino-ide.
+NOTE:- THIS code only works if you have INstalled both LORA Library and the ESP8266 board on arduino IDE.
 #RECIEVER_CODE:-
 ///////////////////////////////////////////////////////////////////////////////////
-#include <ESP8266WiFi.h>
-#include <FirebaseArduino.h>
+//#include <ESP8266WiFi.h>
+//#include <FirebaseArduino.h>
 #include <SPI.h>
 #include <LoRa.h>
-#define ss 15
+#define Nss 15
 #define rst 16
 #define dio0 4
 void setup() {
-  Serial.begin(115200);   /
+  Serial.begin(115200);   //Change your serial monitor baud rate to see output
  Serial.println("LoRa Receiver Callback");
 
-  LoRa.setPins(ss, rst, dio0);
+  LoRa.setPins(Nss, rst, dio0);//you can change the pins based on your circuit
 
-  if (!LoRa.begin(433E6)) {
+  if (!LoRa.begin(433E6)) {//->defines the operating frequency of lora
     Serial.println("Starting LoRa failed!");
     while (1);
   }
